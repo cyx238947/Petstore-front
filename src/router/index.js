@@ -13,16 +13,16 @@ const routes = [
   {
     path: '/',
     name: 'Manager',
-    component: () => import('../views/Manager.vue'),
-    redirect: '/home',  // 重定向到主页
-    children: [
-      { path: '403', name: 'NoAuth', meta: { name: '无权限' }, component: () => import('../views/manager/403') },
-      { path: 'home', name: 'Home', meta: { name: '系统首页' }, component: () => import('../views/manager/Home') },
-      { path: 'admin', name: 'Admin', meta: { name: '管理员信息' }, component: () => import('../views/manager/Admin') },
-      { path: 'adminPerson', name: 'AdminPerson', meta: { name: '个人信息' }, component: () => import('../views/manager/AdminPerson') },
-      { path: 'password', name: 'Password', meta: { name: '修改密码' }, component: () => import('../views/manager/Password') },
-      { path: 'notice', name: 'Notice', meta: { name: '公告信息' }, component: () => import('../views/manager/Notice') },
-    ]
+    // component: () => import('../views/Manager.vue'),
+    redirect: '/front',  // 重定向到主页
+    // children: [
+    //   { path: '403', name: 'NoAuth', meta: { name: '无权限' }, component: () => import('../views/manager/403') },
+    //   { path: 'home', name: 'Home', meta: { name: '系统首页' }, component: () => import('../views/manager/Home') },
+    //   { path: 'admin', name: 'Admin', meta: { name: '管理员信息' }, component: () => import('../views/manager/Admin') },
+    //   { path: 'adminPerson', name: 'AdminPerson', meta: { name: '个人信息' }, component: () => import('../views/manager/AdminPerson') },
+    //   { path: 'password', name: 'Password', meta: { name: '修改密码' }, component: () => import('../views/manager/Password') },
+    //   { path: 'notice', name: 'Notice', meta: { name: '公告信息' }, component: () => import('../views/manager/Notice') },
+    // ]
   },
   {
     path: '/front',
@@ -47,23 +47,23 @@ const router = new VueRouter({
   routes
 })
 
-// 注：不需要前台的项目，可以注释掉该路由守卫
-// 路由守卫
-// router.beforeEach((to ,from, next) => {
-//   let user = JSON.parse(localStorage.getItem("xm-user") || '{}');
-//   if (to.path === '/') {
-//     if (user.role) {
-//       if (user.role === 'USER') {
-//         next('/front/home')
-//       } else {
-//         next('/home')
-//       }
-//     } else {
-//       next('/login')
-//     }
-//   } else {
-//     next()
-//   }
-// })
+// // 注：不需要前台的项目，可以注释掉该路由守卫
+// // 路由守卫
+// // router.beforeEach((to ,from, next) => {
+// //   let user = JSON.parse(localStorage.getItem("xm-user") || '{}');
+// //   if (to.path === '/') {
+// //     if (user.role) {
+// //       if (user.role === 'USER') {
+// //         next('/front/home')
+// //       } else {
+// //         next('/home')
+// //       }
+// //     } else {
+// //       next('/login')
+// //     }
+// //   } else {
+// //     next()
+// //   }
+// // })
 
 export default router

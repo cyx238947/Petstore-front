@@ -72,9 +72,9 @@ export default {
     }
   },
   created() {
-    if (!this.user.id) {
-      this.$router.push('/login')
-    }
+    // if (!this.user.id) {
+    //   this.$router.push('/login')
+    // }
   },
   methods: {
     updateUser() {

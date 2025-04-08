@@ -11,7 +11,7 @@
 
             <div style="display: flex; color: #666666FF; margin: 14px 0">
               <img src="@/assets/imgs/bg.jpg" alt="" style="height: 20px; width: 20px">
-              <div style="margin-left: 10px; font-size: 14px"><a href="#" @click="navTo('/front/type')">Birds</a></div>
+              <div style="margin-left: 10px; font-size: 14px"><a href="" @click="navTo('/front/type')">Birds</a></div>
             </div>
 
             <div style="display: flex; color: #666666FF; margin: 14px 0">
@@ -79,7 +79,7 @@
 
             <div style="display: flex;margin-top: 50px;">
                <div style="flex: 1;text-align: center;">
-                <img src="@/assets/imgs/购物车.jpg" alt="" style="height: 25px;width: 25px;">
+                <a href="" @click="navTo('/front/cart')"><img src="@/assets/imgs/购物车.jpg" alt="" style="height: 25px;width: 25px;"></a>
                 <div>购物车</div>
                </div>
                <div style="flex: 1;text-align: center;">
