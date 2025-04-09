@@ -25,12 +25,14 @@
 </template>
 
 <script>
+import request from '@/utils/request';
+import { setToken } from '@/utils/auth';
 export default {
   name: "Login",
   data() {
     return {
       dialogVisible: true,
-      form: { role: 'ADMIN' },
+      form: { id:1, valid:true, role: 'ADMIN', username:"", password:"" },
       rules: {
         username: [
           { required: true, message: '请输入账号', trigger: 'blur' },
@@ -41,27 +43,44 @@ export default {
       }
     }
   },
-  created() {
-
+  async created() {
+   
+    
   },
   methods: {
-    login() {
-      this.$refs['formRef'].validate((valid) => {
-        if (valid) {
-          // 验证通过
-          this.$request.post('/login', this.form).then(res => {
-            if (res.code === '200') {
-              localStorage.setItem("xm-user", JSON.stringify(res.data))  // 存储用户数据
-              this.$router.push('/')  // 跳转主页
-              this.$message.success('登录成功')
-            } else {
-              this.$message.error(res.msg)
-            }
-          })
-        }
-      })
+    async login() {
+      try {
+        
+        const response = await request.post("/tokens", this.form);
+        console.log('asdasdawawdwqsa')
+        console.log(response);
+        console.log(response.headers.authorization);
+        const token = response.headers.authorization.split(' ')[1];
+        setToken(token);
+        this.$router.push('/dashboard'); // 跳转到主页
+      } catch (error) {
+        console.log(error);
+        alert('登录失败');
+      }
     }
   }
+
+
+  //   login() {
+  //     console.log('assxsa');
+  //     this.$refs['formRef'].validate((valid) => {
+  //       console.log("asdas");
+  //       if (valid) {
+  //         // 验证通过
+  //         this.$request.post('/user', this.form).then(res => {
+  //           const token = response.headers['authorization'].split(' ')[1];
+  //           localStorage.setItem('jwt_token', token); // 存储 Token
+  //           this.$router.push('/front/home'); // 跳转到主页
+  //         })
+  //       }
+  //     })
+  //   }
+  // }
 }
 </script>
 

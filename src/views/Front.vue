@@ -81,9 +81,9 @@ export default {
     updateUser() {
       this.user = JSON.parse(localStorage.getItem('xm-user') || '{}')   // 重新获取下用户的最新信息
     },
-    navTo(url){
-      location.href=url;
-    },
+    // navTo(url){
+    //   location.href=url;
+    // },
     // 退出登录
     logout() {
       localStorage.removeItem("xm-user");

@@ -57,14 +57,40 @@
 </template>
 
 <script>
-
+import authrequest from '@/utils/authrequest';
+import { checkToken } from '@/utils/auth';
 export default {
 
   data() {
     return {
-
+      form:{
+        itemId: 'EST-11'
+      }
     }
   },
+
+  async created() {
+    
+    if(true){
+      try {
+      console.log('sacxas');
+      const response = await authrequest.get("/cart/getCart")
+      
+      const cart = response.data.data;
+      localStorage.setItem('cart', cart);
+      console.log(cart);
+      const res = await authrequest.post('/cart/add', this.form)
+      console.log(res);
+    }
+      catch (error) {
+        console.log(error);
+        alert('no');
+      }
+    }
+      
+      
+    }
+  ,
 
   // methods：本页面所有的点击事件或者其他函数定义区
   methods: {

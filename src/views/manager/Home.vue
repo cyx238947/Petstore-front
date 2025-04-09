@@ -26,6 +26,7 @@
 </template>
 
 <script>
+console.log("asdasa");
 
 export default {
   name: 'Home',
