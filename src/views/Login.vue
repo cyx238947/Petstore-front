@@ -32,7 +32,7 @@ export default {
   data() {
     return {
       dialogVisible: true,
-      form: { id:1, valid:true, role: 'ADMIN', username:"", password:"" },
+      form: { id:1, valid:true, role:['ADMIN'] , username:"", password:"" },
       rules: {
         username: [
           { required: true, message: '请输入账号', trigger: 'blur' },
@@ -50,9 +50,9 @@ export default {
   methods: {
     async login() {
       try {
-        
-        const response = await request.post("/tokens", this.form);
         console.log('asdasdawawdwqsa')
+        const response = await request.post("/tokens", this.form);
+        
         console.log(response);
         console.log(response.headers.authorization);
         const token = response.headers.authorization.split(' ')[1];

@@ -17,7 +17,7 @@ request.interceptors.request.use((config) => {
 
 
     config.headers['Content-Type'] = 'application/json;charset=utf-8';        // 设置请求头格式
-
+    console.log('xxxxxxxxxxx')
     return config;
 }, error => {
     console.error('request error: ' + error); // for debug
@@ -27,6 +27,7 @@ request.interceptors.request.use((config) => {
 // response 拦截器
 request.interceptors.response.use(
     (response) => {
+      console.log('wwwww');
       // ✅ 关键：直接暴露完整响应对象（包含 headers）
       return {
         data: response.data, // 业务数据
