@@ -69,28 +69,36 @@ export default {
     }
   },
 
-  async created() {
+// <<<<<<< HEAD
+//   async created() {
     
-    if(true){
-      try {
-      console.log('sacxas');
-      const response = await authrequest.get("/cart/getCart")
+//     if(true){
+//       try {
+//       console.log('sacxas');
+//       const response = await authrequest.get("/cart/getCart")
       
-      const cart = response.data.data;
-      localStorage.setItem('cart', cart);
-      console.log(cart);
-      const res = await authrequest.post('/cart/add', this.form)
-      console.log(res);
-    }
-      catch (error) {
-        console.log(error);
-        alert('no');
-      }
-    }
+//       const cart = response.data.data;
+//       localStorage.setItem('cart', cart);
+//       console.log(cart);
+//       const res = await authrequest.post('/cart/add', this.form)
+//       console.log(res);
+//     }
+//       catch (error) {
+//         console.log(error);
+//         alert('no');
+//       }
+//     }
       
       
+//     }
+//   ,
+// =======
+  created() {
+    if (!this.user.id) {
+      this.$router.push('/login')
     }
-  ,
+  },
+// >>>>>>> d248e75fc5a676959fc3eab2bb2130bf26b69e67
 
   // methods：本页面所有的点击事件或者其他函数定义区
   methods: {
