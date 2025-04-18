@@ -19,12 +19,18 @@
                 </div>
                 
                 <!-- 商品图片 -->
+<!--                <div style="width: 120px;">-->
+<!--                  <el-image style="width: 80px; height: 60px; border-radius: 3px" -->
+<!--                           :src="getImageUrl(item.item.description)" -->
+<!--                           :preview-src-list="[getImageUrl(item.item.description)]"></el-image>-->
+<!--                </div>-->
                 <div style="width: 120px;">
-                  <el-image style="width: 80px; height: 60px; border-radius: 3px" 
-                           :src="getImageUrl(item.item.description)" 
-                           :preview-src-list="[getImageUrl(item.item.description)]"></el-image>
+                  <el-image
+                      style="width: 80px; height: 60px; border-radius: 3px"
+                      :src="getImageUrl(item.item.image	)"
+                      :preview-src-list="[getImageUrl(item.item.image	)]"
+                  ></el-image>
                 </div>
-                
                 <!-- 商品名称 -->
                 <div style="width: 240px;">
                   <a :href="'/front/detail?id=' + item.item.itemId">{{item.item.name}}</a>
@@ -395,11 +401,23 @@ export default {
     },
 
     // 从描述中获取图片URL
-    getImageUrl(description) {
-      const match = description.match(/src="([^"]+)"/);
-      return match ? match[1] : '';
+    // getImageUrl(description) {
+    //   const match = description.match(/src="([^"]+)"/);
+    //   return match ? match[1] : '';
+    // },
+    getImageUrl(imageName) {
+      if (!imageName) {
+        return '/default-product.jpg'; // 默认图片路径
+      }
+
+      try {
+        // 动态加载本地图片
+        return require(`@/assets/imgs/${imageName}`);
+      } catch (error) {
+        console.warn(`Image not found: ${imageName}`);
+        return '/default-product.jpg'; // 如果图片不存在，返回默认图片
+      }
     },
-    
     // 下单
     async pay() {
       if (this.selectedItems.length === 0) {
