@@ -56,10 +56,10 @@
               @click.native="viewProductDetail(product.productId)"
             >
               <div class="product-card-content">
-                <img :src="product.imageUrl || '/default-product.jpg'" alt="图片" class="product-image">
+<!--                <img :src="product.imageUrl || '/default-product.jpg'" alt="图片" class="product-image">-->
                 <div class="product-info">
                   <h3 class="product-name">{{ product.name }}</h3>
-                  <p class="product-description">{{ product.description || '暂无描述' }}</p>
+                  <p class="product-description">描述：{{ product.description || '暂无描述' }}</p>
                   <div class="product-footer">
 <!--                    <span class="product-price">¥{{ product.price || '待询价' }}</span>-->
                     <el-button size="mini" type="primary" @click.stop="viewProductDetail(product.productId)">查看详情</el-button>

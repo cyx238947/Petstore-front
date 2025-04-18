@@ -38,8 +38,10 @@ export default {
    * @returns {Promise} - 返回Promise对象
    */
   addToCart(item) {
-    return authrequest.post('/cart/items', item);
+    return request.post('/cart/add', item);
+
   },
+
   getCategoryList() {
     return request.get('/catalog/category');
   }
