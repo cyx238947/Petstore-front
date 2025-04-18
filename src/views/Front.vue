@@ -1,3 +1,11 @@
+<!--
+ * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
+ * @Date: 2025-04-18 23:49:48
+ * @LastEditors: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
+ * @LastEditTime: 2025-04-18 23:57:17
+ * @FilePath: \petstorefront\src\views\Front.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
   <div>
     <!-- <div class="front-notice"><i class="el-icon-bell" style="margin-right: 2px"></i>公告：{{ top }}</div> -->
@@ -39,7 +47,8 @@
     </div>
     <!--主体-->
     <div class="main-body">
-      <router-view ref="child" @update:user="updateUser" />
+      <!-- <router-view ref="child" @update:user="updateUser" /> -->
+      <router-view ref="child"  />
     </div>
   </div>
 
@@ -59,24 +68,24 @@ export default {
   },
 
   mounted() {
-    this.loadNotice()
+    // this.loadNotice()
   },
   methods: {
-    loadNotice() {
-      this.$request.get('/notice/selectAll').then(res => {
-        this.notice = res.data
-        let i = 0
-        if (this.notice && this.notice.length) {
-          this.top = this.notice[0].content
-          setInterval(() => {
-            this.top = this.notice[i].content
-            i++
-            if (i === this.notice.length) {
-              i = 0
-            }
-          }, 2500)
-        }
-      })
+    // loadNotice() {
+    //   this.$request.get('/notice/selectAll').then(res => {
+    //     this.notice = res.data
+    //     let i = 0
+    //     if (this.notice && this.notice.length) {
+    //       this.top = this.notice[0].content
+    //       setInterval(() => {
+    //         this.top = this.notice[i].content
+    //         i++
+    //         if (i === this.notice.length) {
+    //           i = 0
+    //         }
+    //       }, 2500)
+    //     }
+    //   })
     },
     updateUser() {
       this.user = JSON.parse(localStorage.getItem('xm-user') || '{}')   // 重新获取下用户的最新信息
@@ -91,7 +100,7 @@ export default {
     },
   }
 
-}
+
 </script>
 
 <style scoped>

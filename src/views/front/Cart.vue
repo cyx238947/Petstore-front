@@ -27,13 +27,15 @@
                 <div style="width: 120px;">
                   <el-image
                       style="width: 80px; height: 60px; border-radius: 3px"
-                      :src="getImageUrl(item.item.image	)"
-                      :preview-src-list="[getImageUrl(item.item.image	)]"
+                      :src="getImageUrl(item.item.imageName)"
+                      :preview-src-list="[getImageUrl(item.item.imageName)]"
                   ></el-image>
                 </div>
                 <!-- 商品名称 -->
                 <div style="width: 240px;">
                   <a :href="'/front/detail?id=' + item.item.itemId">{{item.item.name}}</a>
+                  <!-- <span>{{item.item.description}}</span> -->
+                  <span>{{item.item.imageName}}</span>
                 </div>
                 
                 <!-- 商品价格 -->
@@ -406,11 +408,15 @@ export default {
     //   return match ? match[1] : '';
     // },
     getImageUrl(imageName) {
+      console.log("image")
+      console.log(imageName)
       if (!imageName) {
         return '/default-product.jpg'; // 默认图片路径
       }
 
       try {
+        console.log("imageName")
+        console.log(imageName)
         // 动态加载本地图片
         return require(`@/assets/imgs/${imageName}`);
       } catch (error) {
