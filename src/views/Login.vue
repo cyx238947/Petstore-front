@@ -57,7 +57,7 @@ export default {
         console.log(response.headers.authorization);
         const token = response.headers.authorization.split(' ')[1];
         setToken(token);
-        this.$router.push('/dashboard'); // 跳转到主页
+        this.$router.push('/front/home'); // 跳转到主页
       } catch (error) {
         console.log(error);
         alert('登录失败');
