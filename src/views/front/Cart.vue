@@ -65,6 +65,22 @@
                   :total="filteredCartItems.length">
               </el-pagination>
             </div>
+
+             <!-- 新增的手动添加商品区域 -->
+      <div style="margin: 20px 0; padding: 0 50px; border-top: 1px solid #eee; padding-top: 20px;">
+        <h3>手动添加商品到购物车</h3>
+        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+          <el-input v-model="newItemId" placeholder="输入商品ID" style="width: 200px; margin-right: 10px;"></el-input>
+          <el-input v-model="newItemPrice" placeholder="输入商品价格" style="width: 200px; margin-right: 10px;"></el-input>
+          <el-input v-model="newItemName" placeholder="输入商品名称" style="width: 200px; margin-right: 10px;"></el-input>
+          <el-input-number v-model="newItemQuantity" :min="1" style="width: 120px; margin-right: 10px;"></el-input-number>
+          <el-button type="primary" @click="addManualItem">添加</el-button>
+        </div>
+        <div style="color: #999; font-size: 12px;">
+          提示：此功能仅用于测试，添加的商品会保存在本地购物车中
+        </div>
+
+            </div>
           </div>
         </div>
       </div>
@@ -83,7 +99,13 @@ export default {
       selectedSubTotal: 0,    // 选中商品总价
       pageNum: 1,
       pageSize: 10,
-      isLoggedIn: false // 登录状态标识
+      isLoggedIn: false, // 登录状态标识
+
+
+      newItemId: '',       // 手动输入的商品ID
+      newItemPrice: '',    // 手动输入的商品价格
+      newItemName: '',     // 手动输入的商品名称
+      newItemQuantity: 1,  // 手动输入的商品数量
     }
   },
 
@@ -133,6 +155,52 @@ export default {
   },
 
   methods: {
+
+
+    // 新增方法：手动添加商品到购物车
+    addManualItem() {
+      if (!this.newItemId || !this.newItemPrice || !this.newItemName) {
+        this.$message.warning('请填写完整的商品信息');
+        return;
+      }
+      
+      // 验证价格是否为数字
+      const price = parseFloat(this.newItemPrice);
+      if (isNaN(price) || price <= 0) {
+        this.$message.warning('请输入有效的商品价格');
+        return;
+      }
+      
+      // 创建新商品对象
+      const newItem = {
+        item: {
+          itemId: this.newItemId,
+          listPrice: price,
+          name: this.newItemName,
+          description: '<p>手动添加的商品</p>',
+          quantity: 100 // 默认库存设为100
+        },
+        quantity: this.newItemQuantity,
+        selected: false
+      };
+      
+      // 添加到购物车
+      this.cartItems.push(newItem);
+      
+      // 保存到本地存储
+      this.saveCartToLocalStorage();
+      
+      // 清空输入框
+      this.newItemId = '';
+      this.newItemPrice = '';
+      this.newItemName = '';
+      this.newItemQuantity = 1;
+      
+      this.$message.success('商品已添加到购物车');
+    },
+
+
+
     // 从服务器加载购物车
     async loadCartFromServer() {
       try {
@@ -196,9 +264,12 @@ export default {
       if (this.isLoggedIn) {
         try {
           const response = await authrequest.post("/cart/remove", { itemId });
-          if (response.data.data) {
+          if (response.data.status === 0 && response.data.data) {
+            this.cartItems = this.cartItems.filter(item => item.item.itemId !== itemId);
             this.$message.success("移除成功");
-            await this.loadCartFromServer();
+        
+            // 更新本地存储
+            this.saveCartToLocalStorage();
           } else {
             this.$message.error("移除失败");
           }
@@ -258,51 +329,51 @@ export default {
       return match ? match[1] : '';
     },
     
-    // 下单
-    async pay() {
-      if (this.selectedItems.length === 0) {
-        this.$message.warning("请选择要购买的商品");
-        return;
+    // 在 Cart.vue 的 methods 中修改 pay 方法
+async pay() {
+  if (this.selectedItems.length === 0) {
+    this.$message.warning("请选择要购买的商品");
+    return;
+  }
+  
+  if (!this.isLoggedIn) {
+    this.$message.warning("请先登录");
+    this.$router.push('/login');
+    return;
+  }
+  
+  try {
+    // 计算总金额
+    const totalAmount = this.selectedItems.reduce((sum, item) => {
+      return sum + (item.item.listPrice * item.quantity);
+    }, 0);
+    
+    // 准备订单数据
+    const orderData = {
+      items: this.selectedItems.map(item => ({
+        itemId: item.item.itemId,
+        name: item.item.name,
+        price: item.item.listPrice,
+        quantity: item.quantity,
+        image: this.getImageUrl(item.item.description)
+      })),
+      total: totalAmount,
+      itemCount: this.selectedItems.length
+    };
+    
+    // 跳转到订单确认页，并传递数据
+    this.$router.push({
+      path: '/front/orderCheck',
+      query: {
+        orderData: JSON.stringify(orderData)
       }
-      
-      if (!this.isLoggedIn) {
-        this.$message.warning("请先登录");
-        this.$router.push('/login');
-        return;
-      }
-      
-      try {
-        // 生成订单号
-        const orderCode = 'ORD' + Date.now();
-        
-        // 调用下单接口
-        const response = await authrequest.post("/itemOrder/CDS", {
-          code: orderCode,
-          items: this.selectedItems.map(item => ({
-            itemId: item.item.itemId,
-            quantity: item.quantity
-          }))
-        });
-        
-        if (response.data.data) {
-          this.$message.success("下单成功");
-          
-          // 下单成功后跳转到订单详情页
-          this.$router.push({
-            path: '/front/orderDetail',
-            query: { id: orderCode }
-          });
-          
-          // 重新加载购物车
-          await this.loadCartFromServer();
-        } else {
-          this.$message.error("下单失败");
-        }
-      } catch (error) {
-        console.error("下单失败:", error);
-        this.$message.error("下单失败");
-      }
-    }
+    });
+    
+  } catch (error) {
+    console.error("下单失败:", error);
+    this.$message.error("下单失败");
+  }
+}
   }
 }
 </script>
