@@ -100,7 +100,7 @@ export default {
       pageNum: 1,
       pageSize: 10,
       isLoggedIn: false, // 登录状态标识
-
+      loading: false,   // 加载状态
 
       newItemId: '',       // 手动输入的商品ID
       newItemPrice: '',    // 手动输入的商品价格
@@ -142,20 +142,36 @@ export default {
         }, 0);
       },
       deep: true
+    },
+
+    // 监听登录状态变化
+    isLoggedIn(newVal) {
+      if (newVal) {
+        this.loadCartFromServer();
+      } else {
+        this.loadCartFromLocalStorage();
+      }
     }
   },
 
   created() {
-    this.isLoggedIn = checkToken();
-    if (!this.isLoggedIn) {
-      this.loadCartFromLocalStorage();
-    } else {
+    
       this.loadCartFromServer();
-    }
   },
 
   methods: {
-
+    // 检查登录状态
+    checkLoginStatus() {
+      const loggedIn = checkToken();
+      if (this.isLoggedIn !== loggedIn) {
+        this.isLoggedIn = loggedIn;
+        if (this.isLoggedIn) {
+          this.loadCartFromServer();
+        } else {
+          this.loadCartFromLocalStorage();
+        }
+      }
+    },
 
     // 新增方法：手动添加商品到购物车
     addManualItem() {
@@ -164,33 +180,29 @@ export default {
         return;
       }
       
-      // 验证价格是否为数字
       const price = parseFloat(this.newItemPrice);
       if (isNaN(price) || price <= 0) {
         this.$message.warning('请输入有效的商品价格');
         return;
       }
       
-      // 创建新商品对象
       const newItem = {
         item: {
           itemId: this.newItemId,
           listPrice: price,
           name: this.newItemName,
           description: '<p>手动添加的商品</p>',
-          quantity: 100 // 默认库存设为100
+          quantity: 100
         },
         quantity: this.newItemQuantity,
-        selected: false
+        selected: false,
+        inStock: true,
+        total: new BigDecimal(price * this.newItemQuantity)
       };
       
-      // 添加到购物车
       this.cartItems.push(newItem);
-      
-      // 保存到本地存储
       this.saveCartToLocalStorage();
       
-      // 清空输入框
       this.newItemId = '';
       this.newItemPrice = '';
       this.newItemName = '';
@@ -199,40 +211,88 @@ export default {
       this.$message.success('商品已添加到购物车');
     },
 
-
-
-    // 从服务器加载购物车
+    // 从服务器加载购物车 - 修改后的方法
     async loadCartFromServer() {
+      this.loading = true;
+      
       try {
-        const response = await authrequest.get("/cart/getCart");
-        this.cartItems = response.data.data.cartItems.map(item => ({
-          ...item,
-          selected: false
-        }));
-        this.selectedSubTotal = 0;
-        // 同步到本地存储
-        this.saveCartToLocalStorage();
+        console.log('ok1')
+        const response = await authrequest.get('/cart/getCart')
+        console.log('Cart API response:', response);
+
+        if (response.data.status === 0 && response.data.data) {
+          // 服务器返回的是CartVO对象，包含cartItems数组
+          const serverCart = response.data.data;
+          console.log('ok0001')
+          // 转换服务器返回的数据结构为前端需要的格式
+          const serverItems = serverCart.cartItems.map(cartItem => ({
+            item: {
+              itemId: cartItem.item.itemId,
+              listPrice: cartItem.item.listPrice,
+              name: cartItem.item.name,
+              description: cartItem.item.description || '',
+              quantity: cartItem.item.quantity || 100 // 默认库存
+            },
+            quantity: cartItem.quantity,
+            inStock: cartItem.inStock,
+            total: cartItem.total,
+            selected: false
+          }));
+          console.log('ok0002')
+          // 合并本地和服务器数据（以服务器数据为主）
+          const localItems = this.getLocalCartItems();
+          const serverItemIds = new Set(serverItems.map(item => item.item.itemId));
+          console.log('ok 0003')          
+          // 添加本地独有的项目
+          localItems.forEach(localItem => {
+            if (!serverItemIds.has(localItem.item.itemId)) {
+              serverItems.push({
+                ...localItem,
+                selected: false
+              });
+            }
+          });
+
+          this.cartItems = serverItems;
+          this.saveCartToLocalStorage();
+
+           // 计算小计
+           this.selectedSubTotal = serverCart.subTotal || 0;
+        } else {
+          console.error('Invalid cart response:', response.data);
+          this.$message.error("获取购物车数据失败");
+          this.loadCartFromLocalStorage();
+        }
       } catch (error) {
         console.error("加载购物车失败:", error);
         this.$message.error("加载购物车失败");
+        this.loadCartFromLocalStorage();
+      } finally {
+        this.loading = false;
       }
     },
     
-    // 从本地存储加载购物车
-    loadCartFromLocalStorage() {
+    // 获取本地购物车数据
+    getLocalCartItems() {
       const cartData = localStorage.getItem('shoppingCart');
       if (cartData) {
         try {
           const parsedData = JSON.parse(cartData);
-          this.cartItems = (parsedData.cartItems || []).map(item => ({
-            ...item,
-            selected: false
-          }));
-          this.selectedSubTotal = 0;
+          return parsedData.cartItems || [];
         } catch (e) {
           console.error("解析本地购物车数据失败:", e);
         }
       }
+      return [];
+    },
+    
+    // 从本地存储加载购物车
+    loadCartFromLocalStorage() {
+      this.cartItems = this.getLocalCartItems().map(item => ({
+        ...item,
+        selected: false
+      }));
+      this.selectedSubTotal = 0;
     },
     
     // 保存购物车到本地存储
@@ -247,13 +307,13 @@ export default {
     },
     
     // 确认移除商品
-    confirmRemoveItem(item) {
+    async confirmRemoveItem(item) {
       this.$confirm('确定要从购物车移除该商品吗?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(() => {
-        this.removeItem(item.item.itemId);
+      }).then(async () => {
+        await this.removeItem(item.item.itemId);
       }).catch(() => {
         this.$message.info('已取消移除');
       });
@@ -261,49 +321,60 @@ export default {
     
     // 移除商品
     async removeItem(itemId) {
-      if (this.isLoggedIn) {
-        try {
-          const response = await authrequest.post("/cart/remove", { itemId });
-          if (response.data.status === 0 && response.data.data) {
-            this.cartItems = this.cartItems.filter(item => item.item.itemId !== itemId);
-            this.$message.success("移除成功");
+      try {
         
-            // 更新本地存储
-            this.saveCartToLocalStorage();
-          } else {
-            this.$message.error("移除失败");
+          console.log('yessssssssssss')
+          const response = await authrequest.post("/cart/remove", { itemId });
+          if (!response.data.data) {
+            throw new Error("服务器移除失败");
           }
-        } catch (error) {
-          console.error("移除商品失败:", error);
-          this.$message.error("移除商品失败");
-        }
-      } else {
-        // 本地移除逻辑
+        
         this.cartItems = this.cartItems.filter(item => item.item.itemId !== itemId);
         this.saveCartToLocalStorage();
         this.$message.success("移除成功");
+        
+      } catch (error) {
+        console.error("移除商品失败:", error);
+        this.$message.error("移除商品失败");
+        if (this.isLoggedIn) {
+          await this.loadCartFromServer();
+        } else {
+          this.loadCartFromLocalStorage();
+        }
       }
     },
     
     // 更新数量
     async updateQuantity(item) {
-      if (this.isLoggedIn) {
-        try {
+      try {
+        
           const response = await authrequest.post("/cart/update", {
             itemId: item.item.itemId,
             quantity: item.quantity
           });
           if (!response.data.data) {
-            this.$message.error("更新数量失败");
-            await this.loadCartFromServer(); // 恢复原始数据
+            throw new Error("服务器更新失败");
           }
-        } catch (error) {
-          console.error("更新数量失败:", error);
-          this.$message.error("更新数量失败");
-          await this.loadCartFromServer(); // 恢复原始数据
-        }
-      } else {
+        
+
+        // 更新本地数据
+        const index = this.cartItems.findIndex(i => i.item.itemId === item.item.itemId);
+          if (index !== -1) {
+            this.cartItems[index].quantity = item.quantity;
+            this.cartItems[index].total = item.item.listPrice * item.quantity;
+          }
+        
+        
         this.saveCartToLocalStorage();
+        
+      } catch (error) {
+        console.error("更新数量失败:", error);
+        this.$message.error("更新数量失败");
+        if (this.isLoggedIn) {
+          await this.loadCartFromServer();
+        } else {
+          this.loadCartFromLocalStorage();
+        }
       }
     },
     
@@ -329,51 +400,43 @@ export default {
       return match ? match[1] : '';
     },
     
-    // 在 Cart.vue 的 methods 中修改 pay 方法
-async pay() {
-  if (this.selectedItems.length === 0) {
-    this.$message.warning("请选择要购买的商品");
-    return;
-  }
-  
-  if (!this.isLoggedIn) {
-    this.$message.warning("请先登录");
-    this.$router.push('/login');
-    return;
-  }
-  
-  try {
-    // 计算总金额
-    const totalAmount = this.selectedItems.reduce((sum, item) => {
-      return sum + (item.item.listPrice * item.quantity);
-    }, 0);
-    
-    // 准备订单数据
-    const orderData = {
-      items: this.selectedItems.map(item => ({
-        itemId: item.item.itemId,
-        name: item.item.name,
-        price: item.item.listPrice,
-        quantity: item.quantity,
-        image: this.getImageUrl(item.item.description)
-      })),
-      total: totalAmount,
-      itemCount: this.selectedItems.length
-    };
-    
-    // 跳转到订单确认页，并传递数据
-    this.$router.push({
-      path: '/front/orderCheck',
-      query: {
-        orderData: JSON.stringify(orderData)
+    // 下单
+    async pay() {
+      if (this.selectedItems.length === 0) {
+        this.$message.warning("请选择要购买的商品");
+        return;
       }
-    });
-    
-  } catch (error) {
-    console.error("下单失败:", error);
-    this.$message.error("下单失败");
-  }
-}
+      
+      
+      try {
+        const totalAmount = this.selectedItems.reduce((sum, item) => {
+          return sum + (item.item.listPrice * item.quantity);
+        }, 0);
+        
+        const orderData = {
+          items: this.selectedItems.map(item => ({
+            itemId: item.item.itemId,
+            name: item.item.name,
+            price: item.item.listPrice,
+            quantity: item.quantity,
+            image: this.getImageUrl(item.item.description)
+          })),
+          total: totalAmount,
+          itemCount: this.selectedItems.length
+        };
+        
+        this.$router.push({
+          path: '/front/orderCheck',
+          query: {
+            orderData: JSON.stringify(orderData)
+          }
+        });
+        
+      } catch (error) {
+        console.error("下单失败:", error);
+        this.$message.error("下单失败");
+      }
+    }
   }
 }
 </script>
