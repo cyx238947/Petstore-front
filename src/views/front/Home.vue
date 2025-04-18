@@ -11,27 +11,32 @@
 
             <div style="display: flex; color: #666666FF; margin: 14px 0">
               <img src="@/assets/imgs/bg.jpg" alt="" style="height: 20px; width: 20px">
-              <div style="margin-left: 10px; font-size: 14px"><a href="" @click="navTo('/front/type')">Birds</a></div>
+              <div style="margin-left: 10px; font-size: 14px"><a href="javascript:;" @click="navTo('/front/products', {categoryId: 'BIRDS'})">Birds</a></div>
             </div>
 
             <div style="display: flex; color: #666666FF; margin: 14px 0">
               <img src="@/assets/imgs/bg.jpg" alt="" style="height: 20px; width: 20px">
-              <div style="margin-left: 10px; font-size: 14px">Cats</div>
+              <div style="margin-left: 10px; font-size: 14px"><a href="javascript:;" @click="navTo('/front/products', {categoryId: 'CATS'})">Cats</a></div>
             </div>
 
             <div style="display: flex; color: #666666FF; margin: 14px 0">
               <img src="@/assets/imgs/bg.jpg" alt="" style="height: 20px; width: 20px">
-              <div style="margin-left: 10px; font-size: 14px">Dogs</div>
+              <div style="margin-left: 10px; font-size: 14px"><a href="javascript:;" @click="navTo('/front/products', {categoryId: 'DOGS'})">Dogs</a></div>
             </div>
 
             <div style="display: flex; color: #666666FF; margin: 14px 0">
               <img src="@/assets/imgs/bg.jpg" alt="" style="height: 20px; width: 20px">
-              <div style="margin-left: 10px; font-size: 14px">Fish</div>
+              <div style="margin-left: 10px; font-size: 14px"><a href="javascript:;" @click="navTo('/front/products', {categoryId: 'FISH'})">Fish</a></div>
             </div>
 
             <div style="display: flex; color: #666666FF; margin: 14px 0">
               <img src="@/assets/imgs/bg.jpg" alt="" style="height: 20px; width: 20px">
-              <div style="margin-left: 10px; font-size: 14px">Reptiles</div>
+              <div style="margin-left: 10px; font-size: 14px"><a href="javascript:;" @click="navTo('/front/products', {categoryId: 'REPTILES'})">Reptiles</a></div>
+            </div>
+
+            <div style="display: flex; color: #666666FF; margin: 24px 0">
+              <img src="@/assets/imgs/bg.jpg" alt="" style="height: 20px; width: 20px">
+              <div style="margin-left: 10px; font-size: 14px"><a href="javascript:;" @click="navTo('/front/products')" style="color: #FE0137FF; font-weight: bold;">全部商品</a></div>
             </div>
 
           </div>
@@ -79,11 +84,15 @@
 
             <div style="display: flex;margin-top: 50px;">
                <div style="flex: 1;text-align: center;">
-                <a href="" @click="navTo('/front/cart')"><img src="@/assets/imgs/购物车.jpg" alt="" style="height: 25px;width: 25px;"></a>
+                <a href="javascript:;" @click="navTo('/front/cart')"><img src="@/assets/imgs/购物车.jpg" alt="" style="height: 25px;width: 25px;"></a>
                 <div>购物车</div>
                </div>
                <div style="flex: 1;text-align: center;">
-                <img src="@/assets/imgs/订单.jpg" alt="" style="height: 25px;width: 25px;">
+                <a href="javascript:;" @click="navTo('/front/products')"><img src="@/assets/imgs/dog3.gif" alt="" style="height: 25px;width: 25px;"></a>
+                <div>商品展示</div>
+               </div>
+               <div style="flex: 1;text-align: center;">
+                <a href="javascript:;" @click="navTo('/front/order')"><img src="@/assets/imgs/订单.jpg" alt="" style="height: 25px;width: 25px;"></a>
                 <div>订单</div>
                </div>
             </div>
@@ -118,8 +127,11 @@ export default {
   },
   // methods：本页面所有的点击事件或者其他函数定义区
   methods: {
-    navTo(url){
-      location.href=url;
+    navTo(url, query = {}) {
+      this.$router.push({
+        path: url,
+        query: query
+      });
     },
 
   }
